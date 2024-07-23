@@ -1,30 +1,50 @@
 import React from 'react';
 import {colors} from '../../utils/Colors';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import {StyleSheet, Text, TouchableOpacity} from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Text, TouchableOpacity} from 'react-native';
 import {fonts} from '../../utils/Fonts';
 
 const TabItem = ({isFocused, onPress, onLongPress, label}) => {
   const renderIcon = () => {
     if (label === 'Home') {
       return isFocused ? (
-        <FontAwesome5 name={'home'} size={18} color={colors.primary} />
+        <MaterialCommunityIcons
+          name={'view-dashboard'}
+          size={24}
+          color={colors.info}
+        />
       ) : (
-        <FontAwesome5 name={'home'} size={18} color={colors.secondary} />
+        <MaterialCommunityIcons
+          name={'view-dashboard-outline'}
+          size={24}
+          color={colors.secondary}
+        />
       );
     }
 
     if (label === 'Order') {
       return isFocused ? (
-        <FontAwesome5
-          name={'clipboard-list'}
-          size={18}
-          color={colors.primary}
+        <MaterialCommunityIcons
+          name={'clipboard-text'}
+          size={24}
+          color={colors.info}
         />
       ) : (
-        <FontAwesome5
-          name={'clipboard-list'}
-          size={18}
+        <MaterialCommunityIcons
+          name={'clipboard-text-outline'}
+          size={24}
+          color={colors.secondary}
+        />
+      );
+    }
+
+    if (label === 'Wishlist') {
+      return isFocused ? (
+        <MaterialCommunityIcons name={'heart'} size={24} color={colors.info} />
+      ) : (
+        <MaterialCommunityIcons
+          name={'heart-outline'}
+          size={24}
           color={colors.secondary}
         />
       );
@@ -32,28 +52,46 @@ const TabItem = ({isFocused, onPress, onLongPress, label}) => {
 
     if (label === 'Profile') {
       return isFocused ? (
-        <FontAwesome5 name={'user-alt'} size={18} color={colors.primary} />
+        <MaterialCommunityIcons
+          name={'account'}
+          size={24}
+          color={colors.info}
+        />
       ) : (
-        <FontAwesome5 name={'user-alt'} size={18} color={colors.secondary} />
+        <MaterialCommunityIcons
+          name={'account-outline'}
+          size={24}
+          color={colors.secondary}
+        />
       );
     }
 
-    return <FontAwesome5 name={'home'} size={18} color={colors.secondary} />;
+    return (
+      <MaterialCommunityIcons
+        name={'view-dashboard-outline'}
+        size={24}
+        color={colors.secondary}
+      />
+    );
   };
 
   return (
     <TouchableOpacity
       onPress={onPress}
       onLongPress={onLongPress}
-      style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
       activeOpacity={1}>
       {renderIcon()}
       <Text
         style={{
-          color: isFocused ? colors.primary : colors.secondary,
+          color: isFocused ? colors.info : colors.secondary,
           fontFamily: fonts.Regular,
-          fontSize: 12,
-          marginBottom: -6,
+          fontSize: 10,
+          marginBottom: -2,
         }}>
         {label}
       </Text>
@@ -62,5 +100,3 @@ const TabItem = ({isFocused, onPress, onLongPress, label}) => {
 };
 
 export default TabItem;
-
-const styles = StyleSheet.create({});

@@ -8,6 +8,7 @@ import {
   Animated,
   TouchableOpacity,
 } from 'react-native';
+import {colors} from '../../utils/Colors';
 
 const {width} = Dimensions.get('window');
 
@@ -112,10 +113,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 5,
-    backgroundColor: '#a78bfa',
+    backgroundColor: colors.secondary,
     marginHorizontal: 5,
   },
   activeDot: {
-    backgroundColor: '#5b21b6',
+    backgroundColor: colors.info,
   },
 });

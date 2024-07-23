@@ -1,18 +1,17 @@
 import React from 'react';
+import {fonts} from '../../utils/Fonts';
+import {colors} from '../../utils/Colors';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   View,
   Text,
   Image,
   StyleSheet,
-  Dimensions,
   useColorScheme,
   TouchableOpacity,
 } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {fonts} from '../../utils/Fonts';
-import {colors} from '../../utils/Colors';
 
-interface HorizontalProductCardProps {
+interface VerticalProductCardProps {
   imageUrl: any;
   productName: string;
   productPrice: number;
@@ -21,7 +20,7 @@ interface HorizontalProductCardProps {
   onPress?: () => void;
 }
 
-const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
+const VerticalProductCard: React.FC<VerticalProductCardProps> = ({
   imageUrl,
   productName,
   productPrice,
@@ -63,28 +62,20 @@ const HorizontalProductCard: React.FC<HorizontalProductCardProps> = ({
   );
 };
 
-const cardWidth = Dimensions.get('window').width * 0.35;
-const aspectRatio = 4 / 3;
-const imageHeight = cardWidth / aspectRatio;
-
 const styles = StyleSheet.create({
   card: {
-    width: cardWidth,
-    marginHorizontal: 8,
-    marginVertical: 10,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    flex: 1,
+    borderWidth: 1,
     borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    marginVertical: 6,
+    backgroundColor: '#fff',
+    flexDirection: 'column',
+    borderColor: colors.info,
+    justifyContent: 'space-between',
   },
   image: {
+    height: 150,
     width: '100%',
-    height: imageHeight,
     resizeMode: 'contain',
   },
   info: {
@@ -103,9 +94,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.Regular,
   },
   rating: {
+    marginTop: -2,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: -2,
   },
   soldText: {
     fontSize: 10,
@@ -116,4 +107,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HorizontalProductCard;
+export default VerticalProductCard;

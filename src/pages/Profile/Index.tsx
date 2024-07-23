@@ -8,7 +8,7 @@ const Profile = ({navigation}) => {
   const handleLogout = async () => {
     try {
       await Keychain.resetGenericPassword();
-      navigation.replace('Login');
+      navigation.replace('Splash');
     } catch (error) {
       console.log('Keychain error:', error);
     }

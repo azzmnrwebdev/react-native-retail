@@ -1,15 +1,8 @@
 import {colors} from '../../utils/Colors';
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect} from 'react';
 import * as Keychain from 'react-native-keychain';
 import {StackNavigationProp} from '@react-navigation/stack';
-import {
-  StyleSheet,
-  View,
-  Animated,
-  useColorScheme,
-  StatusBar,
-} from 'react-native';
-import {fonts} from '../../utils/Fonts';
+import {StyleSheet, View, StatusBar, Image} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 type RootStackParamList = {
@@ -28,9 +21,6 @@ type Props = {
 };
 
 const Splash = ({navigation}: Props) => {
-  const colorScheme = useColorScheme();
-  const scaleValue = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
@@ -47,18 +37,12 @@ const Splash = ({navigation}: Props) => {
       }
     };
 
-    Animated.timing(scaleValue, {
-      toValue: 1,
-      duration: 5000,
-      useNativeDriver: true,
-    }).start(() => {
+    const timer = setTimeout(() => {
       checkLoginStatus();
-    });
-  }, [navigation, scaleValue]);
+    }, 1500);
 
-  const textStyle = {
-    color: colorScheme === 'light' ? 'white' : '',
-  };
+    return () => clearTimeout(timer);
+  }, [navigation]);
 
   return (
     <View style={{flex: 1}}>
@@ -68,14 +52,15 @@ const Splash = ({navigation}: Props) => {
         translucent
       />
       <LinearGradient
-        colors={[colors.primary, '#ffffff']}
+        colors={[colors.info, colors.info]}
         style={styles.container}
         start={{x: 0, y: 0}}
         end={{x: 1, y: 1}}>
-        <Animated.Text
-          style={[styles.text, {transform: [{scale: scaleValue}]}, textStyle]}>
-          Retail
-        </Animated.Text>
+        <Image
+          source={require('../../assets/images/logo_white.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
       </LinearGradient>
     </View>
   );
@@ -89,10 +74,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  text: {
-    fontSize: 32,
-    textTransform: 'uppercase',
-    fontFamily: fonts.Bold,
-    color: colors.white,
+  logo: {
+    width: 160,
+    height: 160,
   },
 });

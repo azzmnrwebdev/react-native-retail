@@ -1,5 +1,12 @@
+import React, {useEffect, useState} from 'react';
+import {fonts} from '../../utils/Fonts';
 import {colors} from '../../utils/Colors';
-import React, {useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import {StackNavigationProp} from '@react-navigation/stack';
+import CarouselImage from '../../components/CarouselImage/Index';
+import HorizontalProductCard from '../../components/HorizontalProductCard/Index';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   View,
   ScrollView,
@@ -10,20 +17,16 @@ import {
   Modal,
   Alert,
   Animated,
-  SafeAreaView,
   FlatList,
   Dimensions,
+  StatusBar,
+  SafeAreaView,
+  Platform,
 } from 'react-native';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import {useNavigation} from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
-import ImageViewer from 'react-native-image-zoom-viewer';
-import CarouselImage from '../../components/CarouselImage/Index';
-import {fonts} from '../../utils/Fonts';
-import HorizontalProductCard from '../../components/HorizontalProductCard/Index';
+import VerticalProductCard from '../../components/VerticalProductCard/Index';
 
 type RootStackParamList = {
-  Search: undefined;
+  Catalog: undefined;
   ShowCart: undefined;
   ShowCategory: {id: string};
   ProdukTerbaru: undefined;
@@ -33,6 +36,13 @@ type RootStackParamList = {
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
+type CategoryItem = {
+  id: string;
+  name: string;
+  icon: string;
+};
+
+// Data Dummy
 const images = [
   {
     url: 'https://assets-a1.kompasiana.com/items/album/2020/12/07/read-5fcda9568ede485d98617872.jpg',
@@ -45,97 +55,165 @@ const images = [
   },
 ];
 
-const categories = [
-  {id: '1', name: 'Kategori Pengaturan', icon: 'cog'},
-  {id: '2', name: 'Kategori Wifi', icon: 'wifi'},
-  {id: '3', name: 'Kategori Battery', icon: 'battery-half'},
-  {id: '4', name: 'Kategori Bluetooth', icon: 'bluetooth'},
-  {id: '5', name: 'Kategori Mobil', icon: 'car'},
-  {id: '6', name: 'Kategori Awan', icon: 'cloud'},
-  {id: '7', name: 'Kategori Kopi', icon: 'coffee'},
-  {id: '8', name: 'Kategori Database', icon: 'database'},
-  {id: '9', name: 'Kategori Api', icon: 'fire'},
-  {id: '10', name: 'Kategori Hadiah', icon: 'gift'},
-  {id: '11', name: 'Kategori Musik', icon: 'music'},
-  {id: '12', name: 'Kategori Kesehatan', icon: 'heartbeat'},
-  {id: '13', name: 'Kategori Kamera', icon: 'camera'},
-  {id: '14', name: 'Kategori Pesawat', icon: 'plane'},
-  {id: '15', name: 'Kategori Buku', icon: 'book'},
-  {id: '16', name: 'Kategori Uang', icon: 'money-bill'},
-  {id: '17', name: 'Kategori Pendidikan', icon: 'graduation-cap'},
-  {id: '18', name: 'Kategori Makanan', icon: 'utensils'},
-  {id: '19', name: 'Kategori Olahraga', icon: 'football-ball'},
-  {id: '20', name: 'Kategori Film', icon: 'film'},
-  {id: '21', name: 'Kategori Game', icon: 'gamepad'},
-  {id: '22', name: 'Kategori Fashion', icon: 'tshirt'},
-  {id: '23', name: 'Kategori Kecantikan', icon: 'spa'},
-  {id: '24', name: 'Kategori Perjalanan', icon: 'suitcase'},
-  {id: '25', name: 'Kategori Teknologi', icon: 'laptop'},
-  {id: '26', name: 'Kategori Rumah', icon: 'home'},
-  {id: '27', name: 'Kategori Kebersihan', icon: 'broom'},
-  {id: '28', name: 'Kategori Hobi', icon: 'paint-brush'},
-  {id: '29', name: 'Kategori Elektronik', icon: 'plug'},
-  {id: '30', name: 'Kategori Pertanian', icon: 'tractor'},
+const categories: CategoryItem[] = [
+  {id: '1', name: 'Pengaturan', icon: 'cog'},
+  {id: '2', name: 'Internet', icon: 'wifi'},
+  {id: '3', name: 'Battery', icon: 'battery'},
+  {id: '4', name: 'Bluetooth', icon: 'bluetooth'},
+  {id: '5', name: 'Mobil', icon: 'car'},
+  {id: '6', name: 'Awan', icon: 'cloud'},
+  {id: '7', name: 'Kopi', icon: 'coffee'},
+  {id: '8', name: 'Database', icon: 'database'},
+  {id: '9', name: 'Api', icon: 'fire'},
+  {id: '10', name: 'Hadiah', icon: 'gift'},
+  {id: '11', name: 'Musik', icon: 'music'},
+  {id: '12', name: 'Kesehatan', icon: 'heart-pulse'},
+  {id: '13', name: 'Kamera', icon: 'camera'},
+  {id: '14', name: 'Pesawat', icon: 'airplane'},
+  {id: '15', name: 'Buku', icon: 'book'},
+  {id: '16', name: 'Uang', icon: 'cash'},
+  {id: '17', name: 'Pendidikan', icon: 'school'},
+  {id: '18', name: 'Makanan', icon: 'silverware-fork-knife'},
+  {id: '19', name: 'Olahraga', icon: 'football'},
+  {id: '20', name: 'Film', icon: 'movie'},
+  {id: '21', name: 'Game', icon: 'gamepad-variant'},
+  {id: '22', name: 'Fashion', icon: 'tshirt-crew'},
+  {id: '23', name: 'Kecantikan', icon: 'spa-outline'},
+  {id: '24', name: 'Perjalanan', icon: 'briefcase'},
+  {id: '25', name: 'Teknologi', icon: 'laptop'},
+  {id: '26', name: 'Rumah', icon: 'home'},
+  {id: '27', name: 'Kebersihan', icon: 'broom'},
+  {id: '28', name: 'Hobi', icon: 'brush'},
+  {id: '29', name: 'Elektronik', icon: 'power-plug'},
+  {id: '30', name: 'Pertanian', icon: 'tractor'},
 ];
 
 const productData = [
   {
     id: '1',
     imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Air Mineral Air Mineral Air Mineral Air Mineral Air Mineral',
+    productName: 'Produk 1 Produk Produk Produk Produk Produk',
     productPrice: 2800,
-    productRating: 4,
+    productRating: '4.0',
+    totalSold: 100,
   },
   {
     id: '2',
     imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Mie Goreng',
+    productName: 'Produk 2',
     productPrice: 3000,
-    productRating: 5,
+    productRating: '5.0',
+    totalSold: 50,
   },
   {
     id: '3',
     imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Sabun Mandi',
+    productName: 'Produk 3',
     productPrice: 5000,
-    productRating: 5,
+    productRating: '5.0',
+    totalSold: 80,
   },
   {
     id: '4',
     imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Chimory Fresh Milk',
+    productName: 'Produk 4 Produk Produk Produk Produk Produk Produk Produk',
     productPrice: 5000,
-    productRating: 5,
+    productRating: '5.0',
+    totalSold: 125,
   },
   {
     id: '5',
     imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Yakult',
+    productName: 'Produk 5 Produk Produk Produk Produk Produk',
     productPrice: 5000,
-    productRating: 5,
+    productRating: '5.0',
+    totalSold: 35,
+  },
+  {
+    id: '6',
+    imageUrl: require('../../assets/images/products/product2.png'),
+    productName: 'Produk 6',
+    productPrice: 5000,
+    productRating: '5.0',
+    totalSold: 35,
+  },
+  {
+    id: '7',
+    imageUrl: require('../../assets/images/products/product1.png'),
+    productName: 'Produk 7',
+    productPrice: 5000,
+    productRating: '5.0',
+    totalSold: 35,
+  },
+  {
+    id: '8',
+    imageUrl: require('../../assets/images/products/product2.png'),
+    productName: 'Produk 8 Produk Produk Produk Produk Produk Produk Produk',
+    productPrice: 5000,
+    productRating: '5.0',
+    totalSold: 35,
+  },
+  {
+    id: '9',
+    imageUrl: require('../../assets/images/products/product1.png'),
+    productName: 'Produk 9 Produk Produk Produk Produk Produk',
+    productPrice: 5000,
+    productRating: '5.0',
+    totalSold: 35,
+  },
+  {
+    id: '10',
+    imageUrl: require('../../assets/images/products/product2.png'),
+    productName: 'Produk 10',
+    productPrice: 5000,
+    productRating: '5.0',
+    totalSold: 35,
   },
 ];
 
-const AnimatedFontAwesome5 = Animated.createAnimatedComponent(FontAwesome5);
+// Global Helper Functions
+const AnimatedMaterialCommunityIcons = Animated.createAnimatedComponent(
+  MaterialCommunityIcons,
+);
+
+const statusBarHeight =
+  Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 20;
 
 const Home: React.FC = () => {
   const carouselHeight = 200;
   const colorScheme = useColorScheme();
-  const scrollY = new Animated.Value(0);
   const navigation = useNavigation<NavigationProp>();
 
+  const [scrollY] = useState(new Animated.Value(0));
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [barStyle, setBarStyle] = useState<'light-content' | 'dark-content'>(
+    'light-content',
+  );
+
+  useEffect(() => {
+    const listener = scrollY.addListener(({value}) => {
+      if (value >= 50) {
+        setBarStyle('dark-content');
+      } else {
+        setBarStyle('light-content');
+      }
+    });
+
+    return () => {
+      scrollY.removeListener(listener);
+    };
+  }, [scrollY]);
 
   const handleSearch = () => {
     // TODO: ganti url ke halaman Catalog
-    // navigation.navigate('Splash');
+    // navigation.navigate('Catalog');
     Alert.alert('Pencarian belum tersedia, nanti dialihkan ke halaman catalog');
   };
 
   const handleCart = () => {
     // TODO: ganti url ke halaman Cart
-    // navigation.navigate('Splash');
+    // navigation.navigate('ShowCart');
     Alert.alert(
       'Keranjang belum tersedia, nanti dialihkan ke halaman keranjang',
     );
@@ -161,20 +239,26 @@ const Home: React.FC = () => {
     setModalVisible(true);
   };
 
-  // Helpers
+  // Helpers Functions
   const textStyle = {
     color: colorScheme === 'dark' ? colors.dark : '',
   };
 
   const backgroundColor = scrollY.interpolate({
-    inputRange: [0, 100],
+    inputRange: [0, 50],
     outputRange: ['transparent', '#ffffff'],
     extrapolate: 'clamp',
   });
 
   const colorStyle = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: ['#ffffff', '#c8c8c8'],
+    inputRange: [0, 50],
+    outputRange: ['#ffffff', '#F5F5F5'],
+    extrapolate: 'clamp',
+  });
+
+  const iconColor = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: ['#ffffff', colors.info],
     extrapolate: 'clamp',
   });
 
@@ -184,23 +268,33 @@ const Home: React.FC = () => {
     categorySlides.push(categories.slice(i, i + 10));
   }
 
-  const renderCategoryItem = ({item}) => (
+  const renderCategoryItem = ({item}: {item: CategoryItem}) => (
     <TouchableOpacity
       style={styles.categoryItem}
       onPress={() => handleShowCategory(item.id)}
       activeOpacity={1}>
       <View style={styles.iconContainer}>
-        <FontAwesome5 name={item.icon} size={16} color={colors.primary} />
+        <MaterialCommunityIcons
+          name={item.icon}
+          size={20}
+          color={colors.info}
+        />
       </View>
       <Text style={[styles.categoryText, textStyle]}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.safeAreaView}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle={barStyle}
+        backgroundColor="transparent"
+        translucent
+      />
+
       <View style={styles.container}>
         {/* Input dan Icon Keranjang */}
-        <Animated.View style={[styles.inputContainer, {backgroundColor}]}>
+        <Animated.View style={[styles.headerContainer, {backgroundColor}]}>
           <Animated.Text
             style={[
               styles.inputLabel,
@@ -211,10 +305,18 @@ const Home: React.FC = () => {
             Cari Produk?
           </Animated.Text>
           <TouchableOpacity onPress={handleCart} activeOpacity={1}>
-            <AnimatedFontAwesome5
-              name="shopping-cart"
+            <AnimatedMaterialCommunityIcons
+              name="cart-outline"
               size={24}
-              color={colorStyle}
+              color={iconColor}
+              style={{marginRight: 14}}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCart} activeOpacity={1}>
+            <AnimatedMaterialCommunityIcons
+              name="bell-outline"
+              size={24}
+              color={iconColor}
             />
           </TouchableOpacity>
         </Animated.View>
@@ -238,7 +340,7 @@ const Home: React.FC = () => {
           {/* Category */}
           <FlatList
             data={categorySlides}
-            renderItem={({item}) => (
+            renderItem={({item}: {item: CategoryItem[]}) => (
               <View style={styles.slide}>
                 {item.map((category, index) => (
                   <View key={index} style={styles.categoryItemContainer}>
@@ -256,9 +358,7 @@ const Home: React.FC = () => {
           {/* Produk Terlaris */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, textStyle]}>
-                Produk Terlaris
-              </Text>
+              <Text style={[styles.sectionTitle]}>Produk Terlaris</Text>
               <TouchableOpacity
                 onPress={() => handleSeeAll('ProdukTerlaris')}
                 activeOpacity={1}>
@@ -276,6 +376,7 @@ const Home: React.FC = () => {
                   productName={product.productName}
                   productPrice={product.productPrice}
                   productRating={product.productRating}
+                  totalSold={product.totalSold}
                   onPress={() => handleShowProduct(product.id)}
                 />
               ))}
@@ -288,9 +389,7 @@ const Home: React.FC = () => {
           {/* Produk Terbaru */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, textStyle]}>
-                Produk Terbaru
-              </Text>
+              <Text style={[styles.sectionTitle]}>Produk Terbaru</Text>
               <TouchableOpacity
                 onPress={() => handleSeeAll('ProdukTerbaru')}
                 activeOpacity={1}>
@@ -308,6 +407,7 @@ const Home: React.FC = () => {
                   productName={product.productName}
                   productPrice={product.productPrice}
                   productRating={product.productRating}
+                  totalSold={product.totalSold}
                   onPress={() => handleShowProduct(product.id)}
                 />
               ))}
@@ -318,11 +418,33 @@ const Home: React.FC = () => {
           <View style={styles.break}>{/*  */}</View>
 
           {/* Produk Lainnya */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle, textStyle]}>
-                Produk Lainnya
-              </Text>
+          <View style={[styles.section, {paddingBottom: 14}]}>
+            <View style={[styles.sectionHeader, {marginBottom: 6}]}>
+              <Text style={[styles.sectionTitle]}>Produk Lainnya</Text>
+            </View>
+
+            <View
+              style={{
+                flexWrap: 'wrap',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              {productData.map((product, index) => (
+                <View
+                  key={index}
+                  style={{
+                    width: (Dimensions.get('window').width - 36) / 2,
+                  }}>
+                  <VerticalProductCard
+                    imageUrl={product.imageUrl}
+                    productName={product.productName}
+                    productPrice={product.productPrice}
+                    productRating={product.productRating}
+                    totalSold={product.totalSold}
+                    onPress={() => handleShowProduct(product.id)}
+                  />
+                </View>
+              ))}
             </View>
           </View>
         </ScrollView>
@@ -341,52 +463,50 @@ const Home: React.FC = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    width: '100%',
     backgroundColor: colors.white,
   },
-  safeAreaView: {
+  scrollView: {
     flex: 1,
   },
-  scrollView: {
+  container: {
     flex: 1,
   },
   break: {
     height: 12,
     backgroundColor: '#F5F5F5',
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingTop: 16,
-    paddingBottom: 16,
-    position: 'absolute',
+  headerContainer: {
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1,
+    paddingBottom: 10,
+    position: 'absolute',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingTop: statusBarHeight,
+    justifyContent: 'space-between',
   },
   inputLabel: {
     flex: 1,
-    paddingVertical: 10,
     paddingLeft: 16,
-    marginRight: 16,
-    borderRadius: 20,
+    marginRight: 10,
+    paddingVertical: 8,
   },
   slide: {
-    width: Dimensions.get('window').width,
-    flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingVertical: 16,
     paddingHorizontal: 8,
-    paddingVertical: 10,
-    backgroundColor: '#eff6ff',
+    flexDirection: 'row',
+    backgroundColor: '#f0fdfa',
+    width: Dimensions.get('window').width,
   },
   categoryItemContainer: {
     width: '20%',
-    marginVertical: 10,
+    marginVertical: 8,
   },
   categoryItem: {
     alignItems: 'center',
@@ -395,41 +515,41 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    marginBottom: 8,
-    backgroundColor: '#ffffff',
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
     elevation: 3,
+    marginBottom: 8,
+    shadowRadius: 4,
+    borderRadius: 10,
+    shadowOpacity: 0.3,
+    shadowColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    shadowOffset: {width: 0, height: 2},
   },
   categoryText: {
+    fontSize: 10,
     textAlign: 'center',
     fontFamily: fonts.Medium,
-    fontSize: 10,
   },
   section: {
-    paddingHorizontal: 12,
     paddingTop: 20,
     paddingBottom: 20,
+    paddingHorizontal: 12,
   },
   sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   sectionTitle: {
-    color: colors.primary,
     fontSize: 14,
-    fontFamily: fonts.Medium,
+    color: colors.info,
+    fontFamily: fonts.Regular,
     textTransform: 'uppercase',
   },
   seeAll: {
-    color: colors.primaryHover,
     fontSize: 10,
+    color: colors.secondary,
     fontFamily: fonts.Regular,
   },
 });

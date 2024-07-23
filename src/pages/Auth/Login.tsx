@@ -228,9 +228,12 @@ const Login = ({navigation}: Props) => {
   );
 };
 
+export default Login;
+
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
+    backgroundColor: '#f0fdfa',
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -239,7 +242,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#eff6ff',
     paddingHorizontal: 56,
     fontFamily: fonts.Regular,
   },
@@ -276,24 +278,24 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   inputFocused: {
-    borderColor: colors.primary,
+    borderColor: colors.info,
   },
   forgetPassLink: {
     marginTop: 14,
     marginBottom: 14,
     textAlign: 'right',
     fontFamily: fonts.Regular,
-    color: colors.primary,
+    color: colors.info,
     width: '100%',
   },
   loginButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.info,
     paddingVertical: 12,
     borderRadius: 5,
     width: '100%',
   },
   loginButtonFocused: {
-    backgroundColor: colors.primaryHover,
+    backgroundColor: colors.infoHover,
   },
   loginButtonText: {
     fontSize: 16,
@@ -331,7 +333,7 @@ const styles = StyleSheet.create({
   googleButton: {
     backgroundColor: colors.white,
     borderWidth: 1,
-    borderColor: colors.primary,
+    borderColor: colors.info,
     paddingVertical: 12,
     borderRadius: 5,
     width: '100%',
@@ -364,8 +366,6 @@ const styles = StyleSheet.create({
   },
   registerLink: {
     fontFamily: fonts.SemiBold,
-    color: colors.primary,
+    color: colors.info,
   },
 });
-
-export default Login;
