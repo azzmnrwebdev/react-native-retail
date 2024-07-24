@@ -1,12 +1,22 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {fonts} from '../../utils/Fonts';
 import {colors} from '../../utils/Colors';
 import {useNavigation} from '@react-navigation/native';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import {StackNavigationProp} from '@react-navigation/stack';
 import CarouselImage from '../../components/CarouselImage/Index';
+import VerticalProductCard from '../../components/VerticalProductCard/Index';
 import HorizontalProductCard from '../../components/HorizontalProductCard/Index';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
+import {
+  images,
+  categories as initialCategories,
+  bestSellingProduct as initialBestSellingProduct,
+  newProduct as initialNewProduct,
+  recommendation as initialRecommendation,
+} from '../../utils/Home';
+
 import {
   View,
   ScrollView,
@@ -22,12 +32,13 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
+  RefreshControl,
 } from 'react-native';
-import VerticalProductCard from '../../components/VerticalProductCard/Index';
 
 type RootStackParamList = {
   Catalog: undefined;
-  ShowCart: undefined;
+  Cart: undefined;
+  Notification: undefined;
   ShowCategory: {id: string};
   ProdukTerbaru: undefined;
   ProdukTerlaris: undefined;
@@ -42,135 +53,6 @@ type CategoryItem = {
   icon: string;
 };
 
-// Data Dummy
-const images = [
-  {
-    url: 'https://assets-a1.kompasiana.com/items/album/2020/12/07/read-5fcda9568ede485d98617872.jpg',
-  },
-  {
-    url: 'https://diskerpus.badungkab.go.id/storage/olds/diskerpus/15-Manfaat-Membaca-Buku-dalam-Kehidupan_838618.jpg',
-  },
-  {
-    url: 'https://cdn1-production-images-kly.akamaized.net/TIpuSykzCa6zqGib7rGGAPMdCjs=/1200x675/smart/filters:quality(75):strip_icc():format(jpeg)/kly-media-production/medias/3154097/original/087220900_1592297644-collage-female-is-reading-book_1421-3697.jpg',
-  },
-];
-
-const categories: CategoryItem[] = [
-  {id: '1', name: 'Pengaturan', icon: 'cog'},
-  {id: '2', name: 'Internet', icon: 'wifi'},
-  {id: '3', name: 'Battery', icon: 'battery'},
-  {id: '4', name: 'Bluetooth', icon: 'bluetooth'},
-  {id: '5', name: 'Mobil', icon: 'car'},
-  {id: '6', name: 'Awan', icon: 'cloud'},
-  {id: '7', name: 'Kopi', icon: 'coffee'},
-  {id: '8', name: 'Database', icon: 'database'},
-  {id: '9', name: 'Api', icon: 'fire'},
-  {id: '10', name: 'Hadiah', icon: 'gift'},
-  {id: '11', name: 'Musik', icon: 'music'},
-  {id: '12', name: 'Kesehatan', icon: 'heart-pulse'},
-  {id: '13', name: 'Kamera', icon: 'camera'},
-  {id: '14', name: 'Pesawat', icon: 'airplane'},
-  {id: '15', name: 'Buku', icon: 'book'},
-  {id: '16', name: 'Uang', icon: 'cash'},
-  {id: '17', name: 'Pendidikan', icon: 'school'},
-  {id: '18', name: 'Makanan', icon: 'silverware-fork-knife'},
-  {id: '19', name: 'Olahraga', icon: 'football'},
-  {id: '20', name: 'Film', icon: 'movie'},
-  {id: '21', name: 'Game', icon: 'gamepad-variant'},
-  {id: '22', name: 'Fashion', icon: 'tshirt-crew'},
-  {id: '23', name: 'Kecantikan', icon: 'spa-outline'},
-  {id: '24', name: 'Perjalanan', icon: 'briefcase'},
-  {id: '25', name: 'Teknologi', icon: 'laptop'},
-  {id: '26', name: 'Rumah', icon: 'home'},
-  {id: '27', name: 'Kebersihan', icon: 'broom'},
-  {id: '28', name: 'Hobi', icon: 'brush'},
-  {id: '29', name: 'Elektronik', icon: 'power-plug'},
-  {id: '30', name: 'Pertanian', icon: 'tractor'},
-];
-
-const productData = [
-  {
-    id: '1',
-    imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Produk 1 Produk Produk Produk Produk Produk',
-    productPrice: 2800,
-    productRating: '4.0',
-    totalSold: 100,
-  },
-  {
-    id: '2',
-    imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Produk 2',
-    productPrice: 3000,
-    productRating: '5.0',
-    totalSold: 50,
-  },
-  {
-    id: '3',
-    imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Produk 3',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 80,
-  },
-  {
-    id: '4',
-    imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Produk 4 Produk Produk Produk Produk Produk Produk Produk',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 125,
-  },
-  {
-    id: '5',
-    imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Produk 5 Produk Produk Produk Produk Produk',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 35,
-  },
-  {
-    id: '6',
-    imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Produk 6',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 35,
-  },
-  {
-    id: '7',
-    imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Produk 7',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 35,
-  },
-  {
-    id: '8',
-    imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Produk 8 Produk Produk Produk Produk Produk Produk Produk',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 35,
-  },
-  {
-    id: '9',
-    imageUrl: require('../../assets/images/products/product1.png'),
-    productName: 'Produk 9 Produk Produk Produk Produk Produk',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 35,
-  },
-  {
-    id: '10',
-    imageUrl: require('../../assets/images/products/product2.png'),
-    productName: 'Produk 10',
-    productPrice: 5000,
-    productRating: '5.0',
-    totalSold: 35,
-  },
-];
-
 // Global Helper Functions
 const AnimatedMaterialCommunityIcons = Animated.createAnimatedComponent(
   MaterialCommunityIcons,
@@ -183,27 +65,15 @@ const Home: React.FC = () => {
   const carouselHeight = 200;
   const colorScheme = useColorScheme();
   const navigation = useNavigation<NavigationProp>();
-
   const [scrollY] = useState(new Animated.Value(0));
+  const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [barStyle, setBarStyle] = useState<'light-content' | 'dark-content'>(
-    'light-content',
-  );
 
-  useEffect(() => {
-    const listener = scrollY.addListener(({value}) => {
-      if (value >= 50) {
-        setBarStyle('dark-content');
-      } else {
-        setBarStyle('light-content');
-      }
-    });
-
-    return () => {
-      scrollY.removeListener(listener);
-    };
-  }, [scrollY]);
+  const [categories, setCategories] = useState(initialCategories);
+  const [bestSelling, setBestSelling] = useState(initialBestSellingProduct);
+  const [newProducts, setNewProducts] = useState(initialNewProduct);
+  const [recommendations, setRecommendations] = useState(initialRecommendation);
 
   const handleSearch = () => {
     // TODO: ganti url ke halaman Catalog
@@ -213,9 +83,17 @@ const Home: React.FC = () => {
 
   const handleCart = () => {
     // TODO: ganti url ke halaman Cart
-    // navigation.navigate('ShowCart');
+    // navigation.navigate('Cart');
     Alert.alert(
       'Keranjang belum tersedia, nanti dialihkan ke halaman keranjang',
+    );
+  };
+
+  const handleNotification = () => {
+    // TODO: ganti url ke halaman Cart
+    // navigation.navigate('Notification');
+    Alert.alert(
+      'Notifikasi belum tersedia, nanti dialihkan ke halaman notifikasi',
     );
   };
 
@@ -234,6 +112,20 @@ const Home: React.FC = () => {
     Alert.alert(`id produk: ${id}, nanti dialihkan ke detail produk`);
   };
 
+  const getData = async () => {
+    setRefreshing(true);
+    try {
+      setCategories([...categories]);
+      setBestSelling([...bestSelling]);
+      setNewProducts([...newProducts]);
+      setRecommendations([...recommendations]);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const openModal = (index: number) => {
     setSelectedImageIndex(index);
     setModalVisible(true);
@@ -245,19 +137,19 @@ const Home: React.FC = () => {
   };
 
   const backgroundColor = scrollY.interpolate({
-    inputRange: [0, 50],
+    inputRange: [0, 100],
     outputRange: ['transparent', '#ffffff'],
     extrapolate: 'clamp',
   });
 
   const colorStyle = scrollY.interpolate({
-    inputRange: [0, 50],
+    inputRange: [0, 100],
     outputRange: ['#ffffff', '#F5F5F5'],
     extrapolate: 'clamp',
   });
 
   const iconColor = scrollY.interpolate({
-    inputRange: [0, 50],
+    inputRange: [0, 100],
     outputRange: ['#ffffff', colors.info],
     extrapolate: 'clamp',
   });
@@ -287,175 +179,174 @@ const Home: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
-        barStyle={barStyle}
+        barStyle={'dark-content'}
         backgroundColor="transparent"
         translucent
       />
 
-      <View style={styles.container}>
-        {/* Input dan Icon Keranjang */}
-        <Animated.View style={[styles.headerContainer, {backgroundColor}]}>
-          <Animated.Text
-            style={[
-              styles.inputLabel,
-              {backgroundColor: colorStyle},
-              textStyle,
-            ]}
-            onPress={handleSearch}>
-            Cari Produk?
-          </Animated.Text>
-          <TouchableOpacity onPress={handleCart} activeOpacity={1}>
-            <AnimatedMaterialCommunityIcons
-              name="cart-outline"
-              size={24}
-              color={iconColor}
-              style={{marginRight: 14}}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCart} activeOpacity={1}>
-            <AnimatedMaterialCommunityIcons
-              name="bell-outline"
-              size={24}
-              color={iconColor}
-            />
-          </TouchableOpacity>
-        </Animated.View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-          style={styles.scrollView}
-          onScroll={Animated.event(
-            [{nativeEvent: {contentOffset: {y: scrollY}}}],
-            {useNativeDriver: false},
-          )}
-          scrollEventThrottle={16}>
-          {/* Carousel Header */}
-          <CarouselImage
-            images={images}
-            carouselHeight={carouselHeight}
-            onImagePress={openModal}
+      {/* Input dan Icon Keranjang */}
+      <Animated.View style={[styles.headerContainer, {backgroundColor}]}>
+        <Animated.Text
+          style={[styles.inputLabel, {backgroundColor: colorStyle}, textStyle]}
+          onPress={handleSearch}>
+          Cari Produk?
+        </Animated.Text>
+        <TouchableOpacity onPress={handleCart} activeOpacity={1}>
+          <AnimatedMaterialCommunityIcons
+            name="cart-outline"
+            size={24}
+            color={iconColor}
+            style={{marginRight: 12}}
           />
-
-          {/* Category */}
-          <FlatList
-            data={categorySlides}
-            renderItem={({item}: {item: CategoryItem[]}) => (
-              <View style={styles.slide}>
-                {item.map((category, index) => (
-                  <View key={index} style={styles.categoryItemContainer}>
-                    {renderCategoryItem({item: category})}
-                  </View>
-                ))}
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleNotification} activeOpacity={1}>
+          <AnimatedMaterialCommunityIcons
+            name="bell-outline"
+            size={24}
+            color={iconColor}
           />
+        </TouchableOpacity>
+      </Animated.View>
 
-          {/* Produk Terlaris */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle]}>Produk Terlaris</Text>
-              <TouchableOpacity
-                onPress={() => handleSeeAll('ProdukTerlaris')}
-                activeOpacity={1}>
-                <Text style={styles.seeAll}>Lihat Semua {' >'}</Text>
-              </TouchableOpacity>
-            </View>
+      <ScrollView
+        bounces
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={getData}
+            tintColor="#ffffff"
+            colors={[colors.info]}
+            progressBackgroundColor="#ffffff"
+            progressViewOffset={80}
+          />
+        }
+        onScroll={Animated.event(
+          [{nativeEvent: {contentOffset: {y: scrollY}}}],
+          {useNativeDriver: false},
+        )}
+        scrollEventThrottle={16}>
+        {/* Carousel Header */}
+        <CarouselImage
+          images={images}
+          carouselHeight={carouselHeight}
+          onImagePress={openModal}
+        />
 
-            <ScrollView
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}>
-              {productData.map((product, index) => (
-                <HorizontalProductCard
-                  key={index}
-                  imageUrl={product.imageUrl}
-                  productName={product.productName}
-                  productPrice={product.productPrice}
-                  productRating={product.productRating}
-                  totalSold={product.totalSold}
-                  onPress={() => handleShowProduct(product.id)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Break */}
-          <View style={styles.break}>{/*  */}</View>
-
-          {/* Produk Terbaru */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionTitle]}>Produk Terbaru</Text>
-              <TouchableOpacity
-                onPress={() => handleSeeAll('ProdukTerbaru')}
-                activeOpacity={1}>
-                <Text style={styles.seeAll}>Lihat Semua {' >'}</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView
-              horizontal={true}
-              showsHorizontalScrollIndicator={false}>
-              {productData.map((product, index) => (
-                <HorizontalProductCard
-                  key={index}
-                  imageUrl={product.imageUrl}
-                  productName={product.productName}
-                  productPrice={product.productPrice}
-                  productRating={product.productRating}
-                  totalSold={product.totalSold}
-                  onPress={() => handleShowProduct(product.id)}
-                />
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Break */}
-          <View style={styles.break}>{/*  */}</View>
-
-          {/* Produk Lainnya */}
-          <View style={[styles.section, {paddingBottom: 14}]}>
-            <View style={[styles.sectionHeader, {marginBottom: 6}]}>
-              <Text style={[styles.sectionTitle]}>Produk Lainnya</Text>
-            </View>
-
-            <View
-              style={{
-                flexWrap: 'wrap',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              {productData.map((product, index) => (
-                <View
-                  key={index}
-                  style={{
-                    width: (Dimensions.get('window').width - 36) / 2,
-                  }}>
-                  <VerticalProductCard
-                    imageUrl={product.imageUrl}
-                    productName={product.productName}
-                    productPrice={product.productPrice}
-                    productRating={product.productRating}
-                    totalSold={product.totalSold}
-                    onPress={() => handleShowProduct(product.id)}
-                  />
+        {/* Category */}
+        <FlatList
+          data={categorySlides}
+          renderItem={({item}: {item: CategoryItem[]}) => (
+            <View style={styles.slide}>
+              {item.map((category, index) => (
+                <View key={index} style={styles.categoryItemContainer}>
+                  {renderCategoryItem({item: category})}
                 </View>
               ))}
             </View>
-          </View>
-        </ScrollView>
+          )}
+          keyExtractor={(item, index) => index.toString()}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+        />
 
-        <Modal
-          visible={modalVisible}
-          transparent={true}
-          onRequestClose={() => setModalVisible(false)}>
-          <ImageViewer imageUrls={images} index={selectedImageIndex} />
-        </Modal>
-      </View>
+        {/* Produk Terlaris */}
+        <View style={[styles.section, {marginBottom: -5}]}>
+          <View style={[styles.sectionHeader, {marginBottom: 0}]}>
+            <Text style={[styles.sectionTitle]}>Produk Terlaris</Text>
+            <TouchableOpacity
+              onPress={() => handleSeeAll('ProdukTerlaris')}
+              activeOpacity={1}>
+              <Text style={styles.seeAll}>Lihat Semua</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            {bestSelling.map((product, index) => (
+              <HorizontalProductCard
+                key={index}
+                imageUrl={product.imageUrl}
+                productName={product.productName}
+                productPrice={product.productPrice}
+                productRating={product.productRating}
+                totalSold={product.totalSold}
+                onPress={() => handleShowProduct(product.id)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Break */}
+        <View style={styles.break}>{/*  */}</View>
+
+        {/* Produk Terbaru */}
+        <View style={[styles.section, {marginBottom: -5}]}>
+          <View style={[styles.sectionHeader, {marginBottom: 0}]}>
+            <Text style={[styles.sectionTitle]}>Produk Terbaru</Text>
+            <TouchableOpacity
+              onPress={() => handleSeeAll('ProdukTerbaru')}
+              activeOpacity={1}>
+              <Text style={styles.seeAll}>Lihat Semua</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            {newProducts.map((product, index) => (
+              <HorizontalProductCard
+                key={index}
+                imageUrl={product.imageUrl}
+                productName={product.productName}
+                productPrice={product.productPrice}
+                productRating={product.productRating}
+                totalSold={product.totalSold}
+                onPress={() => handleShowProduct(product.id)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Break */}
+        <View style={styles.break}>{/*  */}</View>
+
+        {/* Rekomendasi */}
+        <View style={[styles.section, {marginBottom: -8}]}>
+          <View style={[styles.sectionHeader]}>
+            <Text style={[styles.sectionTitle]}>Rekomendasi</Text>
+          </View>
+
+          <View
+            style={{
+              flexWrap: 'wrap',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}>
+            {recommendations.map((product, index) => (
+              <View
+                key={index}
+                style={{
+                  width: (Dimensions.get('window').width - 24) / 2,
+                }}>
+                <VerticalProductCard
+                  imageUrl={product.imageUrl}
+                  productName={product.productName}
+                  productPrice={product.productPrice}
+                  productRating={product.productRating}
+                  totalSold={product.totalSold}
+                  onPress={() => handleShowProduct(product.id)}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}>
+        <ImageViewer imageUrls={images} index={selectedImageIndex} />
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -466,12 +357,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.white,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
   },
   break: {
     height: 12,
@@ -486,7 +371,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingTop: statusBarHeight,
     justifyContent: 'space-between',
   },
@@ -534,9 +419,10 @@ const styles = StyleSheet.create({
   section: {
     paddingTop: 20,
     paddingBottom: 20,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
   },
   sectionHeader: {
+    marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

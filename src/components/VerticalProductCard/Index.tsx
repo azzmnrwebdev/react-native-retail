@@ -66,11 +66,11 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderWidth: 1,
+    marginBottom: 8,
     borderRadius: 10,
-    marginVertical: 6,
+    borderColor: '#F5F5F5',
     backgroundColor: '#fff',
     flexDirection: 'column',
-    borderColor: colors.info,
     justifyContent: 'space-between',
   },
   image: {
