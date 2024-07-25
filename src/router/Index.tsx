@@ -5,6 +5,7 @@ import Order from '../pages/Order/Index';
 import Splash from '../pages/Splash/Index';
 import Profile from '../pages/Profile/Index';
 import Wishlist from '../pages/Wishlist/Index';
+import ScanBarcode from '../pages/Profile/ScanBarcode';
 import BottomNavigator from '../components/BottomNavigator/Index';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -36,6 +37,7 @@ const Router = () => {
       initialRouteName="Splash">
       <Stack.Screen name={'Splash'} component={Splash} />
       <Stack.Screen name={'Login'} component={Login} />
+      <Stack.Screen name={'ScanBarcode'} component={ScanBarcode} />
       <Stack.Screen name={'MainApp'} component={MainApp} />
     </Stack.Navigator>
   );

@@ -209,7 +209,9 @@ const Home: React.FC = () => {
       </Animated.View>
 
       <ScrollView
-        bounces
+        bounces={false}
+        bouncesZoom={false}
+        alwaysBounceVertical={false}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -258,7 +260,7 @@ const Home: React.FC = () => {
             <TouchableOpacity
               onPress={() => handleSeeAll('ProdukTerlaris')}
               activeOpacity={1}>
-              <Text style={styles.seeAll}>Lihat Semua</Text>
+              <Text style={styles.seeAll}>Lihat Semua {'>'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -287,7 +289,7 @@ const Home: React.FC = () => {
             <TouchableOpacity
               onPress={() => handleSeeAll('ProdukTerbaru')}
               activeOpacity={1}>
-              <Text style={styles.seeAll}>Lihat Semua</Text>
+              <Text style={styles.seeAll}>Lihat Semua {'>'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -359,7 +361,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   break: {
-    height: 12,
+    height: 10,
     backgroundColor: '#F5F5F5',
   },
   headerContainer: {
