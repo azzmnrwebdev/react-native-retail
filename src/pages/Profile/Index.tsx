@@ -18,7 +18,6 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  TouchableWithoutFeedback,
 } from 'react-native';
 
 type RootStackParamList = {
@@ -37,8 +36,6 @@ const Profile = () => {
   const navigation = useNavigation<NavigationProp>();
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isLogoutButtonFocused, setIsLogoutButtonFocused] = useState(false);
-  const [isAbsensiButtonFocused, setIsAbsensiButtonFocused] = useState(false);
 
   const handleEditProfile = () => {
     // TODO: ganti url ke halaman EditProfile
@@ -73,6 +70,17 @@ const Profile = () => {
   const textStyle = {
     color: colorScheme === 'dark' ? colors.dark : '',
   };
+
+  // Data Menus
+  const menuItems = [
+    {
+      name: 'Ubah Profil',
+      icon: 'account-edit-outline',
+      onPress: handleEditProfile,
+    },
+    {name: 'Scan Kunjungan', icon: 'qrcode-scan', onPress: handleScanAbsensi},
+    {name: 'Keluar Aplikasi', icon: 'exit-run', onPress: handleLogout},
+  ];
 
   return (
     <SafeAreaView style={styles.safeAreaView}>
@@ -123,22 +131,12 @@ const Profile = () => {
               Pasar Minggu, Jakarta Selatan
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.editIconContainer}
-            onPress={handleEditProfile}
-            activeOpacity={1}>
-            <MaterialCommunityIcons
-              name="pencil"
-              size={20}
-              color={colors.info}
-            />
-          </TouchableOpacity>
         </View>
 
         {/* Break */}
         <View style={styles.break} />
 
-        {/*  */}
+        {/* Pengeluaran Bulan Ini */}
         <View style={[styles.section]}>
           <View style={[styles.sectionHeader]}>
             <Text style={[styles.sectionTitle]}>Pengeluaran Bulan Ini</Text>
@@ -148,33 +146,40 @@ const Profile = () => {
           </View>
         </View>
 
-        {/* Button Absen */}
-        <TouchableWithoutFeedback
-          onPressIn={() => setIsAbsensiButtonFocused(true)}
-          onPressOut={() => setIsAbsensiButtonFocused(false)}
-          onPress={handleScanAbsensi}>
-          <View
-            style={[
-              styles.buttonContainer,
-              isAbsensiButtonFocused && styles.buttonFocused,
-            ]}>
-            <Text style={styles.buttonText}>Scan Absen</Text>
-          </View>
-        </TouchableWithoutFeedback>
+        {/* Break */}
+        <View style={styles.break} />
 
-        {/* Button Logout */}
-        <TouchableWithoutFeedback
-          onPressIn={() => setIsLogoutButtonFocused(true)}
-          onPressOut={() => setIsLogoutButtonFocused(false)}
-          onPress={handleLogout}>
-          <View
-            style={[
-              styles.buttonContainer,
-              isLogoutButtonFocused && styles.buttonFocused,
-            ]}>
-            <Text style={styles.buttonText}>Keluar</Text>
-          </View>
-        </TouchableWithoutFeedback>
+        {/* List Menu */}
+        <View>
+          {menuItems.map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.menuItem,
+                index !== menuItems.length - 1 && styles.menuItemBorder,
+              ]}>
+              <TouchableOpacity
+                style={styles.touchable}
+                onPress={item.onPress}
+                activeOpacity={1}>
+                <View style={styles.iconTextContainer}>
+                  <MaterialCommunityIcons
+                    size={24}
+                    color={colors.dark}
+                    name={item.icon}
+                    style={styles.icon}
+                  />
+                  <Text style={[styles.text, textStyle]}>{item.name}</Text>
+                </View>
+                <MaterialCommunityIcons
+                  size={20}
+                  color={colors.dark}
+                  name="chevron-right"
+                />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
       </ScrollView>
 
       <Modal
@@ -210,7 +215,7 @@ export default Profile;
 const styles = StyleSheet.create({
   safeAreaView: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: '#F5F5F5',
   },
   break: {
     height: 10,
@@ -277,6 +282,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 8,
+    backgroundColor: colors.white,
   },
   sectionHeader: {
     marginBottom: 8,
@@ -294,21 +300,32 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     fontFamily: fonts.Regular,
   },
-  buttonContainer: {
-    marginTop: 16,
-    borderRadius: 5,
+  menuItem: {
+    paddingHorizontal: 8,
+    backgroundColor: colors.white,
+  },
+  menuItemBorder: {
+    borderBottomColor: '#d1d5db',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  touchable: {
     paddingVertical: 12,
-    marginHorizontal: 20,
-    backgroundColor: colors.info,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  buttonFocused: {
-    backgroundColor: colors.infoHover,
+  iconTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
-  buttonText: {
-    fontSize: 16,
-    color: colors.white,
-    textAlign: 'center',
-    fontFamily: fonts.Medium,
+  icon: {
+    marginRight: 10,
+  },
+  text: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontFamily: fonts.Regular,
   },
   modalBackground: {
     flex: 1,
