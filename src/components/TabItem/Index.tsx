@@ -1,21 +1,21 @@
 import React from 'react';
-import {colors} from '../../utils/Colors';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {Text, TouchableOpacity} from 'react-native';
 import {fonts} from '../../utils/Fonts';
+import {colors} from '../../utils/Colors';
+import {Text, TouchableOpacity} from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const TabItem = ({isFocused, onPress, onLongPress, label}) => {
   const renderIcon = () => {
     if (label === 'Home') {
       return isFocused ? (
         <MaterialCommunityIcons
-          name={'view-dashboard'}
+          name={'home-variant'}
           size={24}
           color={colors.info}
         />
       ) : (
         <MaterialCommunityIcons
-          name={'view-dashboard-outline'}
+          name={'home-variant-outline'}
           size={24}
           color={colors.secondary}
         />
@@ -68,7 +68,7 @@ const TabItem = ({isFocused, onPress, onLongPress, label}) => {
 
     return (
       <MaterialCommunityIcons
-        name={'view-dashboard-outline'}
+        name={'home-variant-outline'}
         size={24}
         color={colors.secondary}
       />

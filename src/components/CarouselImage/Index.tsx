@@ -15,13 +15,13 @@ const {width} = Dimensions.get('window');
 interface CarouselProps {
   images: {url: string}[];
   carouselHeight: number;
-  onImagePress: (index: number) => void;
+  // onImagePress: (index: number) => void;
 }
 
 const CarouselImage: React.FC<CarouselProps> = ({
   images,
   carouselHeight,
-  onImagePress,
+  // onImagePress,
 }) => {
   const scrollViewRef = useRef<ScrollView | null>(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -59,7 +59,7 @@ const CarouselImage: React.FC<CarouselProps> = ({
           <TouchableOpacity
             key={index}
             style={[styles.imageContainer, {height: carouselHeight, width}]}
-            onPress={() => onImagePress(index)}
+            // onPress={() => onImagePress(index)}
             activeOpacity={1}>
             <Image source={{uri: image.url}} style={styles.image} />
           </TouchableOpacity>

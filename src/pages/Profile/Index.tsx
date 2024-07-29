@@ -1,10 +1,12 @@
-import React, {useState} from 'react';
 import {fonts} from '../../utils/Fonts';
 import {colors} from '../../utils/Colors';
+import React, {useEffect, useState} from 'react';
 import * as Keychain from 'react-native-keychain';
-import {useNavigation} from '@react-navigation/native';
+import Header from '../../components/Header/Index';
 import {StackNavigationProp} from '@react-navigation/stack';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import {
   StyleSheet,
   Text,
@@ -18,43 +20,82 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
+  Animated,
 } from 'react-native';
 
 type RootStackParamList = {
   Splash: undefined;
+  MonthExpenses: undefined;
   EditProfile: undefined;
-  ScanBarcode: undefined;
+  ScanQRCode: undefined;
+  Profile: {message?: string};
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
+type ProfileRouteProp = RouteProp<RootStackParamList, 'Profile'>;
 
 const statusBarHeight =
   Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 20;
 
 const Profile = () => {
   const colorScheme = useColorScheme();
+  const route = useRoute<ProfileRouteProp>();
   const navigation = useNavigation<NavigationProp>();
+  const [scrollY] = useState(new Animated.Value(0));
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastOpacity = useState(new Animated.Value(0))[0];
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleEditProfile = () => {
-    // TODO: ganti url ke halaman EditProfile
-    // navigation.navigate('EditProfile');
-    Alert.alert(
-      'Ubah profil belum tersedia, nanti dialihkan ke halaman ubah profil',
-    );
+  useEffect(() => {
+    if (route.params?.message) {
+      setToastVisible(true);
+      Animated.timing(toastOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setTimeout(() => {
+          Animated.timing(toastOpacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => {
+            setToastVisible(false);
+          });
+        }, 3000);
+      });
+    }
+  }, [route.params, toastOpacity]);
+
+  // Handle Function
+  const handleHeaderLayout = (event: any) => {
+    const {height} = event.nativeEvent.layout;
+    setHeaderHeight(height);
   };
 
-  const handleScanAbsensi = () => {
-    navigation.navigate('ScanBarcode');
-  };
-
-  const handleImagePress = () => {
+  const handlePreviewImage = () => {
     setIsModalVisible(true);
   };
 
   const handleCloseModal = () => {
     setIsModalVisible(false);
+  };
+
+  const handleCurrentMonthExpenses = () => {
+    // TODO: ganti url ke halaman MonthExpenses
+    // navigation.navigate('MonthExpenses');
+    Alert.alert('Detail pengeluaran bulan ini belum tersedia');
+  };
+
+  const handleEditProfile = () => {
+    // TODO: ganti url ke halaman EditProfile
+    // navigation.navigate('EditProfile');
+    Alert.alert('Ubah profil belum tersedia');
+  };
+
+  const handleScanQrCode = () => {
+    navigation.navigate('ScanQRCode');
   };
 
   const handleLogout = async () => {
@@ -67,8 +108,29 @@ const Profile = () => {
   };
 
   // Helpers Functions
-  const textStyle = {
+  const textDark = {
     color: colorScheme === 'dark' ? colors.dark : '',
+  };
+
+  const backgroundHeader = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['#ffffff', '#ffffff'],
+    extrapolate: 'clamp',
+  });
+
+  const iconColor = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [colors.info, colors.info],
+    extrapolate: 'clamp',
+  });
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
   // Data Menus
@@ -78,7 +140,7 @@ const Profile = () => {
       icon: 'account-edit-outline',
       onPress: handleEditProfile,
     },
-    {name: 'Scan Kunjungan', icon: 'qrcode-scan', onPress: handleScanAbsensi},
+    {name: 'Scan QR Code', icon: 'qrcode-scan', onPress: handleScanQrCode},
     {name: 'Keluar Aplikasi', icon: 'exit-run', onPress: handleLogout},
   ];
 
@@ -90,14 +152,13 @@ const Profile = () => {
         translucent
       />
 
-      <View
-        style={styles.headerContainer}
-        onLayout={event => {
-          const {height} = event.nativeEvent.layout;
-          setHeaderHeight(height);
-        }}>
-        <Text style={[styles.headerTitle, textStyle]}>Akun Saya</Text>
-      </View>
+      <Header
+        bgHeader={backgroundHeader}
+        titlePage={'Akun Saya'}
+        textDark={textDark}
+        iconColor={iconColor}
+        onLayout={handleHeaderLayout}
+      />
 
       <ScrollView
         bounces={false}
@@ -111,23 +172,23 @@ const Profile = () => {
         {/* Profile */}
         <View style={styles.profileContainer}>
           <View style={styles.profileImageContainer}>
-            <TouchableOpacity onPress={handleImagePress} activeOpacity={1}>
+            <TouchableOpacity onPress={handlePreviewImage} activeOpacity={1}>
               <Image
                 source={require('../../assets/images/profile/person.jpg')}
                 style={styles.profileImage}
               />
             </TouchableOpacity>
-            <Text style={[styles.roleText, textStyle]}>Agen</Text>
+            <Text style={[styles.roleText, textDark]}>Agen</Text>
           </View>
           <View style={styles.profileDetails}>
-            <Text style={[styles.profileName, textStyle]}>
+            <Text style={[styles.profileName, textDark]}>
               Muhammad Azzam Nur Alwi Mansyur
             </Text>
-            <Text style={[styles.profileText, textStyle]}>081234567891</Text>
-            <Text style={[styles.profileText, textStyle]}>
+            <Text style={[styles.profileText, textDark]}>081234567891</Text>
+            <Text style={[styles.profileText, textDark]}>
               azzmnrwebdev@gmail.com
             </Text>
-            <Text style={[styles.profileText, textStyle]}>
+            <Text style={[styles.profileText, textDark]}>
               Pasar Minggu, Jakarta Selatan
             </Text>
           </View>
@@ -140,9 +201,57 @@ const Profile = () => {
         <View style={[styles.section]}>
           <View style={[styles.sectionHeader]}>
             <Text style={[styles.sectionTitle]}>Pengeluaran Bulan Ini</Text>
-            <TouchableOpacity activeOpacity={1}>
+            <TouchableOpacity
+              onPress={handleCurrentMonthExpenses}
+              activeOpacity={1}>
               <Text style={styles.seeAll}>Lihat Semua {'>'}</Text>
             </TouchableOpacity>
+          </View>
+
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'stretch',
+              justifyContent: 'space-between',
+            }}>
+            <View
+              style={{
+                flex: 1,
+                paddingTop: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <MaterialCommunityIcons
+                size={48}
+                name="basket"
+                color={colors.primary}
+                style={{marginBottom: 8}}
+              />
+              <Text style={[{fontFamily: fonts.SemiBold}, textDark]}>
+                Jumlah Barang
+              </Text>
+              <Text style={[{fontFamily: fonts.Regular}, textDark]}>50</Text>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                paddingTop: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <MaterialCommunityIcons
+                size={48}
+                name="cash"
+                color={colors.success}
+                style={{marginBottom: 8}}
+              />
+              <Text style={[{fontFamily: fonts.SemiBold}, textDark]}>
+                Total Harga
+              </Text>
+              <Text style={[{fontFamily: fonts.Regular}, textDark]}>
+                {formatPrice(10000000)}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -169,7 +278,7 @@ const Profile = () => {
                     name={item.icon}
                     style={styles.icon}
                   />
-                  <Text style={[styles.text, textStyle]}>{item.name}</Text>
+                  <Text style={[styles.text, textDark]}>{item.name}</Text>
                 </View>
                 <MaterialCommunityIcons
                   size={20}
@@ -180,7 +289,16 @@ const Profile = () => {
             </View>
           ))}
         </View>
+
+        {/* Break */}
+        <View style={styles.break} />
       </ScrollView>
+
+      {toastVisible && (
+        <Animated.View style={[styles.toast, {opacity: toastOpacity}]}>
+          <Text style={styles.toastText}>{route.params.message}</Text>
+        </Animated.View>
+      )}
 
       <Modal
         transparent={true}
@@ -220,24 +338,6 @@ const styles = StyleSheet.create({
   break: {
     height: 10,
     backgroundColor: '#F5F5F5',
-  },
-  headerContainer: {
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    position: 'absolute',
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    backgroundColor: colors.white,
-    justifyContent: 'space-between',
-    paddingTop: statusBarHeight + 10,
-    paddingBottom: statusBarHeight - 22,
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontFamily: fonts.Medium,
   },
   profileContainer: {
     paddingVertical: 20,
@@ -301,7 +401,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.Regular,
   },
   menuItem: {
-    paddingHorizontal: 8,
+    paddingLeft: 13,
+    paddingRight: 8,
     backgroundColor: colors.white,
   },
   menuItemBorder: {
@@ -346,5 +447,20 @@ const styles = StyleSheet.create({
   closeButton: {
     marginLeft: 336,
     marginBottom: 10,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 50,
+    left: 50,
+    right: 50,
+    backgroundColor: '#d0f0f5',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  toastText: {
+    fontSize: 14,
+    color: colors.info,
+    fontFamily: fonts.Medium,
   },
 });

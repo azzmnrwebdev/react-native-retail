@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
 import {fonts} from '../../utils/Fonts';
 import {colors} from '../../utils/Colors';
+import React, {useEffect, useState} from 'react';
+import Header from '../../components/Header/Index';
 import {useNavigation} from '@react-navigation/native';
-import ImageViewer from 'react-native-image-zoom-viewer';
 import {StackNavigationProp} from '@react-navigation/stack';
 import CarouselImage from '../../components/CarouselImage/Index';
 import VerticalProductCard from '../../components/VerticalProductCard/Index';
@@ -12,9 +12,9 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import {
   images,
   categories as initialCategories,
-  bestSellingProduct as initialBestSellingProduct,
-  newProduct as initialNewProduct,
+  newProducts as initialNewProducts,
   recommendation as initialRecommendation,
+  topSellingProducts as initialTopSellingProducts,
 } from '../../utils/Home';
 
 import {
@@ -33,16 +33,17 @@ import {
   SafeAreaView,
   Platform,
   RefreshControl,
+  ActivityIndicator,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 
 type RootStackParamList = {
   Catalog: undefined;
-  Cart: undefined;
-  Notification: undefined;
-  ShowCategory: {id: string};
-  ProdukTerbaru: undefined;
+  DetailCategory: {id: string};
+  newProducts: undefined;
   ProdukTerlaris: undefined;
-  ShowProduct: {id: string};
+  DetailProduct: {id: string};
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -62,63 +63,72 @@ const statusBarHeight =
   Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 20;
 
 const Home: React.FC = () => {
+  const ITEMS_PER_PAGE_RECOMMENDATION = 10;
+
   const carouselHeight = 200;
   const colorScheme = useColorScheme();
   const navigation = useNavigation<NavigationProp>();
   const [scrollY] = useState(new Animated.Value(0));
   const [refreshing, setRefreshing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState(initialCategories);
-  const [bestSelling, setBestSelling] = useState(initialBestSellingProduct);
-  const [newProducts, setNewProducts] = useState(initialNewProduct);
+  const [newProducts, setNewProducts] = useState(initialNewProducts);
   const [recommendations, setRecommendations] = useState(initialRecommendation);
+  const [pageRecommendations, setPageRecommendations] = useState(1);
+  const [topSellingProducts, setTopSellingProducts] = useState(
+    initialTopSellingProducts,
+  );
 
-  const handleSearch = () => {
-    // TODO: ganti url ke halaman Catalog
-    // navigation.navigate('Catalog');
-    Alert.alert('Pencarian belum tersedia, nanti dialihkan ke halaman catalog');
-  };
-
-  const handleCart = () => {
-    // TODO: ganti url ke halaman Cart
-    // navigation.navigate('Cart');
-    Alert.alert(
-      'Keranjang belum tersedia, nanti dialihkan ke halaman keranjang',
+  useEffect(() => {
+    setRecommendations(
+      initialRecommendation.slice(0, ITEMS_PER_PAGE_RECOMMENDATION),
     );
-  };
+  }, []);
 
-  const handleNotification = () => {
-    // TODO: ganti url ke halaman Cart
-    // navigation.navigate('Notification');
-    Alert.alert(
-      'Notifikasi belum tersedia, nanti dialihkan ke halaman notifikasi',
-    );
-  };
-
-  const handleShowCategory = (id: string) => {
-    // navigation.navigate('ShowCategory', {id});
+  // Handle Function
+  const handleDetailCategory = (id: string) => {
+    // navigation.navigate('DetailCategory', {id});
     Alert.alert(`id kategori: ${id}, nanti dialihkan ke detail kategori`);
   };
 
-  const handleSeeAll = (section: 'ProdukTerlaris' | 'ProdukTerbaru') => {
+  const handleSeeAll = (section: 'ProdukTerlaris' | 'newProducts') => {
     // navigation.navigate(section);
     Alert.alert(`nama route: ${section}`);
   };
 
-  const handleShowProduct = (id: string) => {
-    // navigation.navigate('ShowProduct', {id});
+  const handleDetailProduct = (id: string) => {
+    // navigation.navigate('DetailProduct', {id});
     Alert.alert(`id produk: ${id}, nanti dialihkan ke detail produk`);
+  };
+
+  const loadMoreData = () => {
+    if (loading || recommendations.length >= initialRecommendation.length)
+      return;
+
+    setLoading(true);
+    setTimeout(() => {
+      const newPage = pageRecommendations + 1;
+      const newRecommendations = initialRecommendation.slice(
+        0,
+        newPage * ITEMS_PER_PAGE_RECOMMENDATION,
+      );
+      setRecommendations(newRecommendations);
+      setPageRecommendations(newPage);
+      setLoading(false);
+    }, 1000);
   };
 
   const getData = async () => {
     setRefreshing(true);
     try {
       setCategories([...categories]);
-      setBestSelling([...bestSelling]);
+      setTopSellingProducts([...topSellingProducts]);
       setNewProducts([...newProducts]);
-      setRecommendations([...recommendations]);
+      setPageRecommendations(1);
+      setRecommendations(
+        initialRecommendation.slice(0, ITEMS_PER_PAGE_RECOMMENDATION),
+      );
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -126,23 +136,18 @@ const Home: React.FC = () => {
     }
   };
 
-  const openModal = (index: number) => {
-    setSelectedImageIndex(index);
-    setModalVisible(true);
-  };
-
   // Helpers Functions
-  const textStyle = {
+  const textDark = {
     color: colorScheme === 'dark' ? colors.dark : '',
   };
 
-  const backgroundColor = scrollY.interpolate({
+  const backgroundHeader = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: ['transparent', '#ffffff'],
     extrapolate: 'clamp',
   });
 
-  const colorStyle = scrollY.interpolate({
+  const backgroundInput = scrollY.interpolate({
     inputRange: [0, 100],
     outputRange: ['#ffffff', '#F5F5F5'],
     extrapolate: 'clamp',
@@ -163,7 +168,7 @@ const Home: React.FC = () => {
   const renderCategoryItem = ({item}: {item: CategoryItem}) => (
     <TouchableOpacity
       style={styles.categoryItem}
-      onPress={() => handleShowCategory(item.id)}
+      onPress={() => handleDetailCategory(item.id)}
       activeOpacity={1}>
       <View style={styles.iconContainer}>
         <MaterialCommunityIcons
@@ -172,9 +177,19 @@ const Home: React.FC = () => {
           color={colors.info}
         />
       </View>
-      <Text style={[styles.categoryText, textStyle]}>{item.name}</Text>
+      <Text style={[styles.categoryText, textDark]}>{item.name}</Text>
     </TouchableOpacity>
   );
+
+  const isCloseToBottom = (event: NativeScrollEvent) => {
+    const {layoutMeasurement, contentOffset, contentSize} = event;
+    const paddingToBottom = 20;
+
+    return (
+      layoutMeasurement.height + contentOffset.y >=
+      contentSize.height - paddingToBottom
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -185,28 +200,12 @@ const Home: React.FC = () => {
       />
 
       {/* Input dan Icon Keranjang */}
-      <Animated.View style={[styles.headerContainer, {backgroundColor}]}>
-        <Animated.Text
-          style={[styles.inputLabel, {backgroundColor: colorStyle}, textStyle]}
-          onPress={handleSearch}>
-          Cari Produk?
-        </Animated.Text>
-        <TouchableOpacity onPress={handleCart} activeOpacity={1}>
-          <AnimatedMaterialCommunityIcons
-            name="cart-outline"
-            size={24}
-            color={iconColor}
-            style={{marginRight: 12}}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleNotification} activeOpacity={1}>
-          <AnimatedMaterialCommunityIcons
-            name="bell-outline"
-            size={24}
-            color={iconColor}
-          />
-        </TouchableOpacity>
-      </Animated.View>
+      <Header
+        bgHeader={backgroundHeader}
+        bgInput={backgroundInput}
+        iconColor={iconColor}
+        textDark={textDark}
+      />
 
       <ScrollView
         bounces={false}
@@ -217,7 +216,7 @@ const Home: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={getData}
-            tintColor="#ffffff"
+            tintColor={colors.info}
             colors={[colors.info]}
             progressBackgroundColor="#ffffff"
             progressViewOffset={80}
@@ -225,15 +224,18 @@ const Home: React.FC = () => {
         }
         onScroll={Animated.event(
           [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: false},
+          {
+            useNativeDriver: false,
+            listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+              if (isCloseToBottom(event.nativeEvent)) {
+                loadMoreData();
+              }
+            },
+          },
         )}
         scrollEventThrottle={16}>
         {/* Carousel Header */}
-        <CarouselImage
-          images={images}
-          carouselHeight={carouselHeight}
-          onImagePress={openModal}
-        />
+        <CarouselImage images={images} carouselHeight={carouselHeight} />
 
         {/* Category */}
         <FlatList
@@ -265,7 +267,7 @@ const Home: React.FC = () => {
           </View>
 
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {bestSelling.map((product, index) => (
+            {topSellingProducts.map((product, index) => (
               <HorizontalProductCard
                 key={index}
                 imageUrl={product.imageUrl}
@@ -273,7 +275,7 @@ const Home: React.FC = () => {
                 productPrice={product.productPrice}
                 productRating={product.productRating}
                 totalSold={product.totalSold}
-                onPress={() => handleShowProduct(product.id)}
+                onPress={() => handleDetailProduct(product.id)}
               />
             ))}
           </ScrollView>
@@ -287,7 +289,7 @@ const Home: React.FC = () => {
           <View style={[styles.sectionHeader, {marginBottom: 0}]}>
             <Text style={[styles.sectionTitle]}>Produk Terbaru</Text>
             <TouchableOpacity
-              onPress={() => handleSeeAll('ProdukTerbaru')}
+              onPress={() => handleSeeAll('newProducts')}
               activeOpacity={1}>
               <Text style={styles.seeAll}>Lihat Semua {'>'}</Text>
             </TouchableOpacity>
@@ -302,7 +304,7 @@ const Home: React.FC = () => {
                 productPrice={product.productPrice}
                 productRating={product.productRating}
                 totalSold={product.totalSold}
-                onPress={() => handleShowProduct(product.id)}
+                onPress={() => handleDetailProduct(product.id)}
               />
             ))}
           </ScrollView>
@@ -335,20 +337,19 @@ const Home: React.FC = () => {
                   productPrice={product.productPrice}
                   productRating={product.productRating}
                   totalSold={product.totalSold}
-                  onPress={() => handleShowProduct(product.id)}
+                  onPress={() => handleDetailProduct(product.id)}
                 />
               </View>
             ))}
           </View>
+
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.info} />
+            </View>
+          )}
         </View>
       </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}>
-        <ImageViewer imageUrls={images} index={selectedImageIndex} />
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -363,25 +364,6 @@ const styles = StyleSheet.create({
   break: {
     height: 10,
     backgroundColor: '#F5F5F5',
-  },
-  headerContainer: {
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    paddingBottom: 10,
-    position: 'absolute',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingTop: statusBarHeight,
-    justifyContent: 'space-between',
-  },
-  inputLabel: {
-    flex: 1,
-    paddingLeft: 16,
-    marginRight: 10,
-    paddingVertical: 8,
   },
   slide: {
     flexWrap: 'wrap',
@@ -433,11 +415,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.info,
     fontFamily: fonts.Regular,
-    textTransform: 'uppercase',
   },
   seeAll: {
     fontSize: 10,
     color: colors.secondary,
     fontFamily: fonts.Regular,
+  },
+  loadingContainer: {
+    marginTop: 20,
+    alignItems: 'center',
   },
 });
